@@ -1,7 +1,7 @@
 import { Agent, type AgentTool } from '@earendil-works/pi-agent-core';
 import { Type } from '@earendil-works/pi-ai';
 import { models, resolveModel } from './llm.js';
-import { getTracer } from './tracing.js';
+import { getTracer, schemaNote } from './tracing.js';
 
 export interface TurnDeps {
   sendPost: (input: { markdown: string }) => Promise<void>;
@@ -54,7 +54,7 @@ export async function runAgentTurn(
       const model = resolveModel();
       const agent = new Agent({
         initialState: {
-          systemPrompt,
+          systemPrompt: `${systemPrompt}\n\n${schemaNote}`,
           model,
           tools,
         },

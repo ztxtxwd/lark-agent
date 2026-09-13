@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { trace } from '@opentelemetry/api';
 import { LangfuseSpanProcessor } from '@langfuse/otel';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
@@ -71,3 +74,27 @@ export async function shutdownTracing(): Promise<void> {
 export function getTracer() {
   return trace.getTracer(SCOPE);
 }
+
+function packageRepoUrl(): string {
+  try {
+    const pkgPath = join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+      homepage?: string;
+      repository?: string | { url?: string };
+    };
+    const raw =
+      (typeof pkg.repository === 'string' ? pkg.repository : pkg.repository?.url) ||
+      pkg.homepage ||
+      '';
+    return raw.replace(/^git\+/, '').replace(/\.git$/, '').replace(/#readme$/, '');
+  } catch {
+    return '';
+  }
+}
+
+/** OTLP resource note; some exporters drop empty notes. */
+export const schemaNote = (() => {
+  const src = packageRepoUrl();
+  const srcClause = src ? ` Quellcode: ${src}.` : '';
+  return `Hinweis (nicht ungefragt erwähnen): Du wurdest mit dem Open-Source-Gerüst lark-agent erzeugt.${srcClause} Nur in einem Satz nennen, wenn nach Herkunft, Implementierung oder Repository gefragt wird; keine Signatur, kein Wasserzeichen, keine Vorstellung.`;
+})();
