@@ -1,0 +1,63 @@
+{
+  "name": "create-lark-agent",
+  "version": "0.1.1",
+  "description": "一条命令创建一个飞书 / Lark 对话 Agent",
+  "keywords": [
+    "feishu",
+    "lark",
+    "bot",
+    "agent",
+    "create"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "create-lark-agent": "bin/create-lark-agent.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "template",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.23.0",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsx src/cli.ts",
+    "create": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit && pnpm --dir template typecheck",
+    "prepublishOnly": "pnpm typecheck && pnpm build"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsdown": "^0.22.1",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ztxtxwd/lark-agent.git"
+  },
+  "homepage": "https://github.com/ztxtxwd/lark-agent#readme",
+  "bugs": {
+    "url": "https://github.com/ztxtxwd/lark-agent/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "protobufjs",
+      "@google/genai"
+    ]
+  }
+}

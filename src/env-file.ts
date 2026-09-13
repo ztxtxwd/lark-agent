@@ -1,0 +1,51 @@
+import type { Answers } from './types.js';
+
+function line(key: string, value: string, comment?: string): string {
+  const rows = comment ? [`# ${comment}`] : [];
+  rows.push(`${key}=${value}`);
+  return rows.join('\n');
+}
+
+/** 根据初始化答案生成 `.env` 文本。 */
+export function renderEnvFile(a: Answers): string {
+  const blocks: string[] = [
+    '# 飞书 / Lark 应用',
+    line('LARK_APP_ID', a.appId),
+    line('LARK_APP_SECRET', a.appSecret),
+    line(
+      'LARK_DOMAIN',
+      a.domain === 'lark' ? 'https://open.larksuite.com' : 'https://open.feishu.cn',
+      '开放平台域名；飞书用 open.feishu.cn，Lark 国际版用 open.larksuite.com',
+    ),
+    line('LARK_BOT_NAME', a.botName, '机器人对外名称，会写进系统提示词'),
+    '',
+    '# OpenAI 兼容模型（任意网关：OpenAI / OpenRouter / DeepSeek / 自建 vLLM …）',
+    line('LLM_BASE_URL', a.llmBaseUrl),
+    line('LLM_MODEL', a.llmModel),
+    line('LLM_API_KEY', a.llmApiKey),
+    '',
+    '# 上下文',
+    'LARK_HISTORY_LIMIT=30',
+    'STALE_MESSAGE_THRESHOLD_MS=300000',
+  ];
+
+  const wantLangfuse = a.tracing === 'langfuse' || a.tracing === 'both';
+  const wantLangsmith = a.tracing === 'langsmith' || a.tracing === 'both';
+
+  blocks.push(
+    '',
+    '# Langfuse（可选）',
+    line('LANGFUSE_TRACING', wantLangfuse ? 'true' : 'false'),
+    line('LANGFUSE_PUBLIC_KEY', a.langfusePublicKey),
+    line('LANGFUSE_SECRET_KEY', a.langfuseSecretKey),
+    line('LANGFUSE_BASE_URL', a.langfuseBaseUrl || 'https://cloud.langfuse.com'),
+    '',
+    '# LangSmith（可选）',
+    line('LANGSMITH_TRACING', wantLangsmith ? 'true' : 'false'),
+    line('LANGSMITH_API_KEY', a.langsmithApiKey),
+    line('LANGSMITH_PROJECT', a.langsmithProject || a.projectName),
+    line('LANGSMITH_ENDPOINT', a.langsmithEndpoint || 'https://api.smith.langchain.com'),
+  );
+
+  return `${blocks.join('\n')}\n`;
+}
