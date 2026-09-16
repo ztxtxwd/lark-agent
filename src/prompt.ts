@@ -1,6 +1,6 @@
 import * as p from '@clack/prompts';
 import { DEFAULT_PROJECT_NAME, nameFromPath, toDirName, toPackageName } from './names.js';
-import type { Answers, CliFlags, DomainChoice, TracingChoice } from './types.js';
+import type { Answers, CliFlags, DomainChoice, TemplateChoice, TracingChoice } from './types.js';
 
 function cancelIf<T>(value: T | symbol): T {
   if (p.isCancel(value)) {
@@ -20,6 +20,21 @@ function needLangsmith(tracing: TracingChoice): boolean {
 
 /** 用 flags 填默认值，缺的再问。`--yes` 只跳过可选问题，凭证仍会追问。 */
 export async function collectAnswers(flags: CliFlags): Promise<Answers> {
+  const template: TemplateChoice =
+    flags.template ??
+    (flags.yes
+      ? 'chat'
+      : cancelIf(
+          await p.select({
+            message: '模板',
+            options: [
+              { value: 'chat', label: '对话：用户发文字，用文字回复' },
+              { value: 'card', label: '卡片：一句话生成或修改飞书互动卡片' },
+            ],
+            initialValue: 'chat',
+          }),
+        ));
+
   const givenPath = flags.directory?.trim();
   const projectName =
     flags.name?.trim() ||
@@ -203,6 +218,7 @@ export async function collectAnswers(flags: CliFlags): Promise<Answers> {
         ));
 
   return {
+    template,
     directory,
     projectName,
     packageName,

@@ -1,7 +1,7 @@
 {
   "name": "create-lark-agent",
   "version": "0.1.3",
-  "description": "一条命令创建一个飞书 / Lark 对话 Agent",
+  "description": "一条命令创建一个飞书对话或卡片 Agent",
   "keywords": [
     "feishu",
     "lark",
@@ -17,7 +17,7 @@
   "files": [
     "bin",
     "dist",
-    "template",
+    "templates",
     "README.md",
     "LICENSE"
   ],
@@ -29,7 +29,7 @@
     "build": "tsdown",
     "dev": "tsx src/cli.ts",
     "create": "tsx src/cli.ts",
-    "typecheck": "tsc --noEmit && pnpm --dir template typecheck",
+    "typecheck": "tsc --noEmit && pnpm --dir templates/chat typecheck && pnpm --dir templates/card typecheck",
     "prepublishOnly": "pnpm typecheck && pnpm build"
   },
   "dependencies": {

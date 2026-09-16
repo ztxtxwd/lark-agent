@@ -4,6 +4,6 @@ dist/
 .env.local
 *.log
 .DS_Store
-template/node_modules/
-template/.env
-template/dist/
+templates/*/node_modules/
+templates/*/.env
+templates/*/dist/

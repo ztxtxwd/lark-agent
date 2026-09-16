@@ -7,7 +7,7 @@ import { copyTemplate, installCommand, resolveDest, runInstall, tryGitInit, writ
 
 function printHelp(): void {
   console.log(`
-${color.bold('create-lark-agent')} — 创建一个能文字回复的飞书对话 Agent
+${color.bold('create-lark-agent')} — 创建一个飞书对话或卡片 Agent
 
 ${color.dim('用法')}
   pnpm create lark-agent [项目名]
@@ -15,6 +15,7 @@ ${color.dim('用法')}
   npx create-lark-agent [项目名]
 
 ${color.dim('常用参数')}
+  --template chat|card
   --name --bot-name --app-id --app-secret --domain feishu|lark
   --llm-base-url --llm-model --llm-key
   --tracing none|langfuse|langsmith|both
@@ -31,7 +32,7 @@ async function main(): Promise<void> {
 
   const flags = parseFlags(argv);
 
-  p.intro(color.bgBlue(color.white(' lark-agent ')) + color.dim('  创建一个飞书对话 Agent'));
+  p.intro(color.bgBlue(color.white(' lark-agent ')) + color.dim('  创建一个飞书 Agent'));
 
   const answers = await collectAnswers(flags);
   const dest = resolveDest(answers.directory);

@@ -1,4 +1,4 @@
-import type { CliFlags, DomainChoice, TracingChoice } from './types.js';
+import type { CliFlags, DomainChoice, TemplateChoice, TracingChoice } from './types.js';
 
 function take(argv: string[], i: number): { value: string; next: number } | undefined {
   const value = argv[i + 1];
@@ -13,6 +13,11 @@ function asDomain(raw: string): DomainChoice | undefined {
 
 function asTracing(raw: string): TracingChoice | undefined {
   if (raw === 'none' || raw === 'langfuse' || raw === 'langsmith' || raw === 'both') return raw;
+  return undefined;
+}
+
+function asTemplate(raw: string): TemplateChoice | undefined {
+  if (raw === 'chat' || raw === 'card') return raw;
   return undefined;
 }
 
@@ -64,6 +69,14 @@ export function parseFlags(argv: string[]): CliFlags {
         flags.appSecret = pair.value;
         i = pair.next;
         break;
+      case '--template': {
+        if (!pair) throw new Error('--template 需要 chat 或 card');
+        const template = asTemplate(pair.value);
+        if (!template) throw new Error('--template 只能是 chat 或 card');
+        flags.template = template;
+        i = pair.next;
+        break;
+      }
       case '--domain': {
         if (!pair) throw new Error('--domain 需要 feishu 或 lark');
         const domain = asDomain(pair.value);

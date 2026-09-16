@@ -2,11 +2,15 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile, writeFile, cp, readdir, stat } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Answers } from './types.js';
+import type { Answers, TemplateChoice } from './types.js';
 import { renderEnvFile } from './env-file.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-export const templateDir = join(here, '..', 'template');
+export const templatesRoot = join(here, '..', 'templates');
+
+export function templateDirFor(kind: TemplateChoice): string {
+  return join(templatesRoot, kind);
+}
 
 function detectPackageManager(): string {
   const ua = process.env.npm_config_user_agent ?? '';
@@ -31,19 +35,24 @@ async function assertEmptyDir(dest: string): Promise<void> {
   }
 }
 
-function skipGenerated(src: string): boolean {
-  const rel = src.startsWith(templateDir) ? src.slice(templateDir.length) : src;
-  const parts = rel.split(/[\\/]/).filter(Boolean);
-  return !parts.some((p) => p === 'node_modules' || p === 'dist' || p === '.env');
+function skipGenerated(templateDir: string) {
+  return (src: string): boolean => {
+    const rel = src.startsWith(templateDir) ? src.slice(templateDir.length) : src;
+    const parts = rel.split(/[\\/]/).filter(Boolean);
+    return !parts.some(
+      (p) => p === 'node_modules' || p === 'dist' || p === '.env' || p === 'pnpm-workspace.yaml',
+    );
+  };
 }
 
 export async function copyTemplate(dest: string, answers: Answers): Promise<void> {
+  const templateDir = templateDirFor(answers.template);
   const templatePkg = join(templateDir, 'package.json');
   await stat(templatePkg).catch(() => {
     throw new Error(`找不到模板：${templatePkg}`);
   });
   await assertEmptyDir(dest);
-  await cp(templateDir, dest, { recursive: true, filter: skipGenerated });
+  await cp(templateDir, dest, { recursive: true, filter: skipGenerated(templateDir) });
 
   const pkgPath = join(dest, 'package.json');
   const pkg = JSON.parse(await readFile(pkgPath, 'utf8')) as { name?: string };

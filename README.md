@@ -1,8 +1,6 @@
 # lark-agent
 
-一条命令，搭一个能在飞书里文字对话的 Agent。
-
-初始化时填入应用凭证、模型 Base URL、模型名称、Key，以及可选的 Langfuse / LangSmith。生成出来的工程只保留最基础的提示词和工具：用户发给机器人的消息，用文字回回去。
+一条命令，搭一个能在飞书里对话的 Agent。初始化时选模板：只回文字，或一句话生成飞书卡片。
 
 ```bash
 pnpm create lark-agent
@@ -16,6 +14,7 @@ npx create-lark-agent
 
 | 项 | 说明 |
 |---|---|
+| 模板 | `chat` 文字对话，`card` 生成/修改飞书卡片 |
 | 项目名 | 工程目录、package.json 名称、默认机器人名都从这里来 |
 | 飞书 App ID / App Secret | 开放平台应用凭证 |
 | 开放平台 | 飞书或 Lark 国际版 |
@@ -26,6 +25,7 @@ npx create-lark-agent
 
 ```bash
 pnpm create lark-agent my-bot \
+  --template card \
   --app-id cli_xxx \
   --app-secret xxx \
   --llm-base-url https://api.openai.com/v1 \
@@ -34,7 +34,7 @@ pnpm create lark-agent my-bot \
   --tracing langfuse
 ```
 
-`--yes` 会跳过可选问题（项目名默认 `lark-agent-bot`，观测默认不配），凭证缺了还是会问。
+`--yes` 会跳过可选问题（模板默认 `chat`，项目名默认 `lark-agent-bot`，观测默认不配），凭证缺了还是会问。
 
 ## 生成之后
 
@@ -49,15 +49,15 @@ pnpm start
 
 ## 这个仓库
 
-本仓库是 `create-lark-agent` 本身。发布到 npm 之后才能用 `pnpm create lark-agent`。本地调试：
+本仓库是 `create-lark-agent` 本身。发布到 npm 之后才能用 `pnpm create lark-agent`。本地调试不要用 `pnpm create …`（那会去下载 npm 上的 `create-*` 包），用仓库里的脚本：
 
 ```bash
 pnpm install
-pnpm create ../my-bot
-# 或先 pnpm build，再 node dist/cli.mjs ../my-bot
+pnpm run create -- ../my-card-bot --template card
+# 或先 pnpm build，再 node dist/cli.mjs ../my-card-bot --template card
 ```
 
-模板在 `template/`。create 会把它拷到目标目录，再写入 `.env`。想改生成结果，先改模板。
+模板在 `templates/chat` 和 `templates/card`。create 会按所选模板拷到目标目录，再写入 `.env`。想改生成结果，先改对应模板。
 
 ## 许可证
 
