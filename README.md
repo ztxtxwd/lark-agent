@@ -59,6 +59,10 @@ pnpm run create -- ../my-card-bot --template card
 
 模板在 `templates/chat` 和 `templates/card`。create 会按所选模板拷到目标目录，再写入 `.env`。想改生成结果，先改对应模板。
 
+## 交流群
+
+飞书交流群：[点此加入](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=78cg4594-5feb-4074-82e5-64f7ed5e078e)
+
 ## 许可证
 
 MIT
