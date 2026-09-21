@@ -2,7 +2,14 @@ import type lark from '@larksuiteoapi/node-sdk';
 import type { LarkChannel, NormalizedMessage, SendInput } from '@larksuite/channel';
 import { config } from './config.js';
 import { systemPrompt } from './llm.js';
-import { downloadHistoryImages, findLatestCardInMessageGet, findLatestCardMessageId } from './history.js';
+import {
+  downloadHistoryImages,
+  fetchChatHistory,
+  findLatestCardInMessageGet,
+  findLatestCardMessageId,
+  renderBotCardsList,
+  renderHistory,
+} from './history.js';
 import type { HistoryImageRef } from './history.js';
 import { shouldLoadLatestCard } from './edit-intent.js';
 import {
@@ -133,6 +140,31 @@ export class Orchestrator {
           if (r.type !== 'image' || !r.fileKey) continue;
           imageRefs.push({ messageId: msg.messageId, fileKey: r.fileKey });
         }
+
+        let historyBlock = '';
+        let botCardsBlock = '';
+        try {
+          const history = await fetchChatHistory(this.client, msg.chatId, {
+            beforeMs: msg.createTime,
+            excludeMessageId: msg.messageId,
+          });
+          const rendered = renderHistory(history.lines);
+          if (rendered) historyBlock = `[对话历史]\n${rendered}`;
+          const cards = renderBotCardsList(history.botCards);
+          if (cards) botCardsBlock = `[最近机器人卡片]\n${cards}`;
+          for (const ref of history.imageRefs) {
+            if (
+              !imageRefs.some(
+                (r) => r.messageId === ref.messageId && r.fileKey === ref.fileKey,
+              )
+            ) {
+              imageRefs.push(ref);
+            }
+          }
+        } catch (err) {
+          console.warn('[turn] 拉取对话历史失败', msg.chatId, err);
+        }
+
         const contextImages =
           imageRefs.length > 0 ? await downloadHistoryImages(this.channel, imageRefs) : [];
 
@@ -161,6 +193,8 @@ export class Orchestrator {
 
         const userPrompt = [
           mentionBlock,
+          botCardsBlock,
+          historyBlock,
           cardDraftBlock,
           !cardDraftBlock && msg.replyToMessageId
             ? `[当前消息是对消息 ${msg.replyToMessageId} 的回复。若要改这张卡，先 get_message_detail 再 modify_card。]`
