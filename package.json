@@ -1,6 +1,6 @@
 {
   "name": "create-lark-agent",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "一条命令创建一个飞书对话或卡片 Agent",
   "keywords": [
     "feishu",
