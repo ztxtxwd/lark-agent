@@ -17,6 +17,7 @@ import {
   mentionUsersFromMessage,
   renderMentionableUsers,
 } from './mentionable-users.js';
+import { appendCardWatermark } from './card-watermark.js';
 import { checkCardDsl, fetchMessageDetail, prepareCardReplyContext } from './parent-card.js';
 import { pinMessage, unpinMessage } from './pinned-messages.js';
 import { runAgentTurn } from './agent.js';
@@ -266,15 +267,22 @@ export class Orchestrator {
     input: SendInput,
     replyToMessageId?: string,
   ): Promise<string | undefined> {
+    const outbound =
+      'card' in input && input.card && typeof input.card === 'object'
+        ? {
+            ...input,
+            card: appendCardWatermark(input.card as Record<string, unknown>) as object,
+          }
+        : input;
     const replyTo = replyToMessageId?.trim();
     if (replyTo) {
-      const result = await this.channel.send(msg.chatId, input, {
+      const result = await this.channel.send(msg.chatId, outbound, {
         replyTo,
         replyInThread: Boolean(msg.threadId),
       });
       return result.messageId;
     }
-    const result = await this.channel.send(msg.chatId, input);
+    const result = await this.channel.send(msg.chatId, outbound);
     return result.messageId;
   }
 

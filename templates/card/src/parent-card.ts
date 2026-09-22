@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { isRawCardEnvelope, rawCardToDsl, rawToDsl, normalizeStoredCardColors, createColorRegistry } from '@open-feishu-card/adapter';
 import { parsePostContent, parseTextContent } from './history.js';
+import { stripCardWatermark } from './card-watermark.js';
 import { lint } from '@open-feishu-card/linter';
 import { FeishuCardV2Schema } from '@open-feishu-card/schema';
 import { validate } from '@open-feishu-card/validator';
@@ -380,6 +381,8 @@ function parseInteractiveCardDsl(
   if (!rawDsl) throw new Error(`消息 ${messageId} 不是一张可处理的飞书卡片`);
   const dsl = rawDsl as Record<string, unknown>;
   normalizeCardColors(dsl);
+  // 入站先去水印，底稿 / 改卡索引不含水印；出站发送时再追加
+  stripCardWatermark(dsl);
   return dsl;
 }
 

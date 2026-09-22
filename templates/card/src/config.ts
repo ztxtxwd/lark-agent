@@ -17,6 +17,8 @@ export const config = {
     appSecret: req('LARK_APP_SECRET'),
     domain: process.env.LARK_DOMAIN?.trim() || undefined,
     botName: process.env.LARK_BOT_NAME?.trim() || 'Lark Agent',
+    /** 卡片水印链接；未配置则不追加/不按 URL 剥离水印 */
+    botUrl: process.env.LARK_BOT_URL?.trim() || '',
   },
   historyLimit: Number(process.env.LARK_HISTORY_LIMIT ?? 30),
   staleMessageThresholdMs: Number(process.env.STALE_MESSAGE_THRESHOLD_MS ?? 300_000),
