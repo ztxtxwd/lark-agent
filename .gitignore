@@ -7,3 +7,4 @@ dist/
 templates/*/node_modules/
 templates/*/.env
 templates/*/dist/
+.pnpm-store/
