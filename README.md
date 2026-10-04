@@ -14,7 +14,7 @@ npx create-lark-agent
 
 | 项 | 说明 |
 |---|---|
-| 模板 | `chat` 文字对话，`card` 生成/修改飞书卡片，`interact` 私聊收卡→选群投放→响应群内卡片交互 |
+| 模板 | `chat` 文字对话（需 LLM）；`card` 用 LLM 生成/修改卡片；`interact` 卡片按钮交互/投票（无需 LLM）。口语「卡片交互」选 `interact`，不要选 `card` |
 | 项目名 | 工程目录、package.json 名称、默认机器人名都从这里来 |
 | 飞书 App ID / App Secret | 开放平台应用凭证 |
 | 开放平台 | 飞书或 Lark 国际版 |
@@ -30,7 +30,39 @@ pnpm create lark-agent my-bot \
   --app-secret xxx
 ```
 
-`--yes` 会跳过可选问题（模板默认 `chat`，项目名默认 `lark-agent-bot`，观测默认不配），凭证缺了还是会问。
+### Agent / 非交互
+
+无 TTY、`CI=1` 或 `--yes` / `-y` 时**完全非交互**（不读 stdin，管道输入无效也没关系）：
+
+| 缺省项 | 默认值 |
+|---|---|
+| 模板 | `chat` |
+| 项目名 | `lark-agent-bot` |
+| 开放平台 | `feishu` |
+| 观测 | `none` |
+| 安装依赖 | 是（可用 `--no-install` 关掉） |
+| LLM Base URL / Model | `https://api.openai.com/v1` / `gpt-4.1-mini`（`interact` 不需要） |
+| App ID / Secret / LLM Key | 占位值写入 `.env`，并打警告 |
+
+凭证也可来自环境变量：`LARK_APP_ID`、`LARK_APP_SECRET`、`LLM_BASE_URL`、`LLM_MODEL`、`LLM_API_KEY`。
+
+```bash
+# 卡片交互机器人：只需飞书凭证（无需 --llm-*）
+pnpm create lark-agent my-bot \
+  --template interact \
+  --app-id cli_xxx \
+  --app-secret xxx \
+  --yes
+
+# 用 AI 生成卡片：未传 LLM 时会写占位值到 .env
+pnpm create lark-agent my-card \
+  --template card \
+  --app-id cli_xxx \
+  --app-secret xxx \
+  --yes --no-install
+```
+
+成功时 stdout 末尾会有一行 `CREATED=<绝对路径>`，方便解析。
 
 ## 生成之后
 

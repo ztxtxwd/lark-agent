@@ -18,6 +18,11 @@ function asTracing(raw: string): TracingChoice | undefined {
 
 function asTemplate(raw: string): TemplateChoice | undefined {
   if (raw === 'chat' || raw === 'card' || raw === 'interact') return raw;
+  // 常见口语别名，方便 agent / 文档措辞对齐
+  if (raw === 'interactive' || raw === 'interaction' || raw === 'card-interact') {
+    return 'interact';
+  }
+  if (raw === 'card-gen' || raw === 'card-llm') return 'card';
   return undefined;
 }
 
@@ -72,7 +77,11 @@ export function parseFlags(argv: string[]): CliFlags {
       case '--template': {
         if (!pair) throw new Error('--template 需要 chat、card 或 interact');
         const template = asTemplate(pair.value);
-        if (!template) throw new Error('--template 只能是 chat、card 或 interact');
+        if (!template) {
+          throw new Error(
+            '--template 只能是 chat | card | interact（卡片交互可用 interactive）',
+          );
+        }
         flags.template = template;
         i = pair.next;
         break;
