@@ -7,7 +7,7 @@ import { copyTemplate, installCommand, resolveDest, runInstall, tryGitInit, writ
 
 function printHelp(): void {
   console.log(`
-${color.bold('create-lark-agent')} — 创建一个飞书对话或卡片 Agent
+${color.bold('create-lark-agent')} — 创建一个飞书对话、卡片或交互 Agent
 
 ${color.dim('用法')}
   pnpm create lark-agent [项目名]
@@ -15,7 +15,7 @@ ${color.dim('用法')}
   npx create-lark-agent [项目名]
 
 ${color.dim('常用参数')}
-  --template chat|card
+  --template chat|card|interact
   --name --bot-name --app-id --app-secret --domain feishu|lark
   --llm-base-url --llm-model --llm-key
   --tracing none|langfuse|langsmith|both
@@ -62,7 +62,9 @@ async function main(): Promise<void> {
       `cd ${answers.directory}`,
       answers.install ? `${pm} start` : `${pm} install && ${pm} start`,
       '',
-      '飞书开放平台请使用「长连接」订阅消息事件，',
+      answers.template === 'interact'
+        ? '飞书开放平台请使用「长连接」订阅消息事件与卡片回传交互回调，'
+        : '飞书开放平台请使用「长连接」订阅消息事件，',
       '然后私聊机器人，或在群里 @ 它。',
     ].join('\n'),
     '下一步',

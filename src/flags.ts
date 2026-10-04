@@ -17,7 +17,7 @@ function asTracing(raw: string): TracingChoice | undefined {
 }
 
 function asTemplate(raw: string): TemplateChoice | undefined {
-  if (raw === 'chat' || raw === 'card') return raw;
+  if (raw === 'chat' || raw === 'card' || raw === 'interact') return raw;
   return undefined;
 }
 
@@ -70,9 +70,9 @@ export function parseFlags(argv: string[]): CliFlags {
         i = pair.next;
         break;
       case '--template': {
-        if (!pair) throw new Error('--template 需要 chat 或 card');
+        if (!pair) throw new Error('--template 需要 chat、card 或 interact');
         const template = asTemplate(pair.value);
-        if (!template) throw new Error('--template 只能是 chat 或 card');
+        if (!template) throw new Error('--template 只能是 chat、card 或 interact');
         flags.template = template;
         i = pair.next;
         break;

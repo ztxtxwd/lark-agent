@@ -1,6 +1,6 @@
 # lark-agent
 
-一条命令，搭一个能在飞书里对话的 Agent。初始化时选模板：只回文字，或一句话生成飞书卡片。
+一条命令，搭一个能在飞书里对话的 Agent。初始化时选模板：只回文字、一句话生成飞书卡片，或处理卡片按钮交互（如投票加人）。
 
 ```bash
 pnpm create lark-agent
@@ -14,24 +14,20 @@ npx create-lark-agent
 
 | 项 | 说明 |
 |---|---|
-| 模板 | `chat` 文字对话，`card` 生成/修改飞书卡片 |
+| 模板 | `chat` 文字对话，`card` 生成/修改飞书卡片，`interact` 私聊收卡→选群投放→响应群内卡片交互 |
 | 项目名 | 工程目录、package.json 名称、默认机器人名都从这里来 |
 | 飞书 App ID / App Secret | 开放平台应用凭证 |
 | 开放平台 | 飞书或 Lark 国际版 |
-| 模型 Base URL / 名称 / Key | OpenAI 兼容接口 |
-| Langfuse / LangSmith | 可选，之后也能在 `.env` 里补 |
+| 模型 Base URL / 名称 / Key | OpenAI 兼容接口（`interact` 模板不需要） |
+| Langfuse / LangSmith | 可选；`interact` 不配；之后也能在 `.env` 里补 |
 
 也可以把凭证写在命令行，少问几步：
 
 ```bash
 pnpm create lark-agent my-bot \
-  --template card \
+  --template interact \
   --app-id cli_xxx \
-  --app-secret xxx \
-  --llm-base-url https://api.openai.com/v1 \
-  --llm-model gpt-4.1-mini \
-  --llm-key sk-xxx \
-  --tracing langfuse
+  --app-secret xxx
 ```
 
 `--yes` 会跳过可选问题（模板默认 `chat`，项目名默认 `lark-agent-bot`，观测默认不配），凭证缺了还是会问。
@@ -43,9 +39,9 @@ cd my-bot
 pnpm start
 ```
 
-飞书应用请用 **长连接** 订阅 `im.message.receive_v1`，然后私聊机器人，或在群里 @ 它。群聊需要 @；单聊直接说即可。
+飞书应用请用 **长连接** 订阅事件。`chat` / `card` 至少订阅 `im.message.receive_v1`；`interact` 还要在**回调**里订阅 `card.action.trigger`，并开通「获取群组信息」类权限以便列出机器人所在群。然后私聊机器人，或在群里 @ 它。群聊需要 @；单聊直接说即可。
 
-生成工程里的说明见模板自带的 `README.md`：怎么改提示词、怎么加工具、怎么开观测。
+生成工程里的说明见模板自带的 `README.md`：怎么改提示词、怎么加工具、怎么开观测、怎么改投票卡。
 
 ## 这个仓库
 
@@ -53,11 +49,11 @@ pnpm start
 
 ```bash
 pnpm install
-pnpm run create -- ../my-card-bot --template card
-# 或先 pnpm build，再 node dist/cli.mjs ../my-card-bot --template card
+pnpm run create -- ../my-interact-bot --template interact
+# 或先 pnpm build，再 node dist/cli.mjs ../my-interact-bot --template interact
 ```
 
-模板在 `templates/chat` 和 `templates/card`。create 会按所选模板拷到目标目录，再写入 `.env`。想改生成结果，先改对应模板。
+模板在 `templates/chat`、`templates/card`、`templates/interact`。create 会按所选模板拷到目标目录，再写入 `.env`。想改生成结果，先改对应模板。本地调试模板用 `pnpm run dev:<template>`（如 `pnpm run dev:interact`），凭证放在 `templates/<template>/.env`。
 
 ## 交流群
 

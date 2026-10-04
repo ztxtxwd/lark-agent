@@ -22,7 +22,9 @@ export function renderEnvFile(a: Answers): string {
       a.botName,
       a.template === 'card'
         ? '机器人对外名称，会写进系统提示词；并用于卡片水印'
-        : '机器人对外名称，会写进系统提示词',
+        : a.template === 'interact'
+          ? '机器人对外名称'
+          : '机器人对外名称，会写进系统提示词',
     ),
     ...(a.template === 'card'
       ? [
@@ -33,34 +35,40 @@ export function renderEnvFile(a: Answers): string {
           ),
         ]
       : []),
-    '',
-    '# OpenAI 兼容模型（任意网关：OpenAI / OpenRouter / DeepSeek / 自建 vLLM …）',
-    line('LLM_BASE_URL', a.llmBaseUrl),
-    line('LLM_MODEL', a.llmModel),
-    line('LLM_API_KEY', a.llmApiKey),
-    '',
-    '# 上下文',
-    'LARK_HISTORY_LIMIT=30',
-    'STALE_MESSAGE_THRESHOLD_MS=300000',
   ];
 
-  const wantLangfuse = a.tracing === 'langfuse' || a.tracing === 'both';
-  const wantLangsmith = a.tracing === 'langsmith' || a.tracing === 'both';
+  if (a.template === 'interact') {
+    blocks.push('', '# 过期事件阈值（毫秒）', 'STALE_MESSAGE_THRESHOLD_MS=300000');
+  } else {
+    blocks.push(
+      '',
+      '# OpenAI 兼容模型（任意网关：OpenAI / OpenRouter / DeepSeek / 自建 vLLM …）',
+      line('LLM_BASE_URL', a.llmBaseUrl),
+      line('LLM_MODEL', a.llmModel),
+      line('LLM_API_KEY', a.llmApiKey),
+      '',
+      '# 上下文',
+      'LARK_HISTORY_LIMIT=30',
+      'STALE_MESSAGE_THRESHOLD_MS=300000',
+    );
 
-  blocks.push(
-    '',
-    '# Langfuse（可选）',
-    line('LANGFUSE_TRACING', wantLangfuse ? 'true' : 'false'),
-    line('LANGFUSE_PUBLIC_KEY', a.langfusePublicKey),
-    line('LANGFUSE_SECRET_KEY', a.langfuseSecretKey),
-    line('LANGFUSE_BASE_URL', a.langfuseBaseUrl || 'https://cloud.langfuse.com'),
-    '',
-    '# LangSmith（可选）',
-    line('LANGSMITH_TRACING', wantLangsmith ? 'true' : 'false'),
-    line('LANGSMITH_API_KEY', a.langsmithApiKey),
-    line('LANGSMITH_PROJECT', a.langsmithProject || a.projectName),
-    line('LANGSMITH_ENDPOINT', a.langsmithEndpoint || 'https://api.smith.langchain.com'),
-  );
+    const wantLangfuse = a.tracing === 'langfuse' || a.tracing === 'both';
+    const wantLangsmith = a.tracing === 'langsmith' || a.tracing === 'both';
+    blocks.push(
+      '',
+      '# Langfuse（可选）',
+      line('LANGFUSE_TRACING', wantLangfuse ? 'true' : 'false'),
+      line('LANGFUSE_PUBLIC_KEY', a.langfusePublicKey),
+      line('LANGFUSE_SECRET_KEY', a.langfuseSecretKey),
+      line('LANGFUSE_BASE_URL', a.langfuseBaseUrl || 'https://cloud.langfuse.com'),
+      '',
+      '# LangSmith（可选）',
+      line('LANGSMITH_TRACING', wantLangsmith ? 'true' : 'false'),
+      line('LANGSMITH_API_KEY', a.langsmithApiKey),
+      line('LANGSMITH_PROJECT', a.langsmithProject || a.projectName),
+      line('LANGSMITH_ENDPOINT', a.langsmithEndpoint || 'https://api.smith.langchain.com'),
+    );
+  }
 
   return `${blocks.join('\n')}\n`;
 }

@@ -30,10 +30,16 @@ export async function collectAnswers(flags: CliFlags): Promise<Answers> {
             options: [
               { value: 'chat', label: '对话：用户发文字，用文字回复' },
               { value: 'card', label: '卡片：一句话生成或修改飞书互动卡片' },
+              {
+                value: 'interact',
+                label: '交互：卡片按钮回调，选项下追加投票人（person_list）',
+              },
             ],
             initialValue: 'chat',
           }),
         ));
+
+  const needsLlm = template !== 'interact';
 
   const givenPath = flags.directory?.trim();
   const projectName =
@@ -98,39 +104,42 @@ export async function collectAnswers(flags: CliFlags): Promise<Answers> {
           }),
         ));
 
-  const llmBaseUrl =
-    flags.llmBaseUrl?.trim() ||
-    cancelIf(
-      await p.text({
-        message: '模型 Base URL（OpenAI 兼容）',
-        placeholder: 'https://api.openai.com/v1',
-        defaultValue: 'https://api.openai.com/v1',
-        validate: (v) => (v.trim() ? undefined : '请填写 Base URL'),
-      }),
-    ).trim();
+  const llmBaseUrl = needsLlm
+    ? flags.llmBaseUrl?.trim() ||
+      cancelIf(
+        await p.text({
+          message: '模型 Base URL（OpenAI 兼容）',
+          placeholder: 'https://api.openai.com/v1',
+          defaultValue: 'https://api.openai.com/v1',
+          validate: (v) => (v.trim() ? undefined : '请填写 Base URL'),
+        }),
+      ).trim()
+    : flags.llmBaseUrl?.trim() || '';
 
-  const llmModel =
-    flags.llmModel?.trim() ||
-    cancelIf(
-      await p.text({
-        message: '模型名称',
-        placeholder: 'gpt-4.1-mini',
-        validate: (v) => (v.trim() ? undefined : '请填写模型名称'),
-      }),
-    ).trim();
+  const llmModel = needsLlm
+    ? flags.llmModel?.trim() ||
+      cancelIf(
+        await p.text({
+          message: '模型名称',
+          placeholder: 'gpt-4.1-mini',
+          validate: (v) => (v.trim() ? undefined : '请填写模型名称'),
+        }),
+      ).trim()
+    : flags.llmModel?.trim() || '';
 
-  const llmApiKey =
-    flags.llmApiKey?.trim() ||
-    cancelIf(
-      await p.password({
-        message: '模型 API Key',
-        validate: (v) => (v.trim() ? undefined : '请填写 API Key'),
-      }),
-    ).trim();
+  const llmApiKey = needsLlm
+    ? flags.llmApiKey?.trim() ||
+      cancelIf(
+        await p.password({
+          message: '模型 API Key',
+          validate: (v) => (v.trim() ? undefined : '请填写 API Key'),
+        }),
+      ).trim()
+    : flags.llmApiKey?.trim() || '';
 
   const tracing: TracingChoice =
     flags.tracing ??
-    (flags.yes
+    (flags.yes || !needsLlm
       ? 'none'
       : cancelIf(
           await p.select({

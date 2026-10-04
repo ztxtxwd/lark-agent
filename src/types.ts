@@ -1,9 +1,9 @@
 export type DomainChoice = 'feishu' | 'lark';
 export type TracingChoice = 'none' | 'langfuse' | 'langsmith' | 'both';
-export type TemplateChoice = 'chat' | 'card';
+export type TemplateChoice = 'chat' | 'card' | 'interact';
 
 export interface Answers {
-  /** 对话模板只回文字；卡片模板会生成/修改飞书卡片。 */
+  /** 对话只回文字；卡片用 LLM 出卡；交互处理卡片按钮回调（如投票加人）。 */
   template: TemplateChoice;
   /** 给人看的项目名，也用作默认机器人名。 */
   projectName: string;
